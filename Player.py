@@ -29,6 +29,7 @@ class Player:
         self.last_shoot=0;
         self.speed = speed
         self.sound = sound
+        self.score = 0
 
     def render(self, clock):
         if(self.shooting and self.shootTiming()):
@@ -93,8 +94,8 @@ class Player:
 
     def update(self, boxes):
         if(self.reloading and self.gun.name in ['handgun', 'shotgun', 'rifle']):
-            reload_seconds=(pygame.time.get_ticks()-self.reload_begin)/1000
-            if reload_seconds>self.gun.reload_time:
+            reload_seconds=(pygame.time.get_ticks()-self.reload_begin)
+            if reload_seconds>self.gun.reload_time*1000:
                 self.reloading = False
                 self.gun.bullets = self.gun.cap
             self.animation = 'reload'
@@ -149,9 +150,10 @@ class Player:
 
     def shootTiming(self):
         if self.gun.name in ['handgun', 'shotgun', 'rifle']:
-            if self.gun.bullets == 0:
+            if not self.reloading and self.gun.bullets == 0:
                 self.reloading = True
                 self.reload_begin = pygame.time.get_ticks()
+                pygame.mixer.Channel(1).play(self.sound['reload'])
             if self.reloading or not self.shooting:
                 return False
             interval = pygame.time.get_ticks()-self.last_shoot
@@ -191,45 +193,54 @@ class Player:
         glPopMatrix()
 
 
-    def hundleKeyDown(self, event):
-        self.key_states[event.scancode] = 1
-        if(self.key_states[10]):
-            self.gun = self.inventory['knife']
-            self.reloading = False
-        if(self.key_states[11]):
-            self.gun = self.inventory['handgun']
-            self.reloading = False
-        if(self.key_states[12]):
-            self.gun = self.inventory['shotgun']
-            self.reloading = False
-        if(self.key_states[13]):
-            self.gun = self.inventory['rifle']
-            self.reloading = False
-        if(self.key_states[41]):
-            self.gun = self.inventory['flashlight']
-            self.reloading = False
-        if(self.key_states[27]):
-            self.reloading = True
-            pygame.mixer.Channel(1).play(self.sound['reload'])
-            self.reload_begin = pygame.time.get_ticks()
+    def handleKeyDown(self, event):
+        if self.life>0:
+            self.key_states[event.scancode] = 1
+            if(self.key_states[10]):
+                self.gun = self.inventory['knife']
+                self.reloading = False
+                self.animation = "idle"
+            if(self.key_states[11]):
+                self.gun = self.inventory['handgun']
+                self.reloading = False
+            if(self.key_states[12]):
+                self.gun = self.inventory['shotgun']
+                self.reloading = False
+            if(self.key_states[13]):
+                self.gun = self.inventory['rifle']
+                self.reloading = False
+            if(self.key_states[41]):
+                self.gun = self.inventory['flashlight']
+                self.reloading = False
+                self.animation = "idle"
+            if(self.key_states[27]):
+                self.reloading = True
+                self.reload_begin = pygame.time.get_ticks()
+                pygame.mixer.Channel(1).play(self.sound['reload'])
 
-    def hundleKeyUp(self, event):
-        self.key_states[event.scancode] = 0
+    def handleKeyUp(self, event):
+        if self.life>0:
+            self.key_states[event.scancode] = 0
 
-    def hundleMouseDown(self, event):
-        if(event.button == 1):
-            self.shooting = True
-            self.last_shoot = pygame.time.get_ticks()
-        if(event.button == 3):
-            self.attacking = True
+    def handleMouseDown(self, event):
+        if self.life>0:
+            if(event.button == 1):
+                self.shooting = True
+                if self.gun.name in ['rifle', 'shotgun', 'handgun'] and self.gun.bullets > 0:
+                    self.gun.bullets -=1
+                self.last_shoot = pygame.time.get_ticks()
+            if(event.button == 3):
+                self.attacking = True
 
-    def hundleMouseUp(self, event):
-        if(event.button == 1):
-            self.shooting = False
-        if(event.button == 3):
-            self.attacking = False
+    def handleMouseUp(self, event):
+        if self.life>0:
+            if(event.button == 1):
+                self.shooting = False
+            if(event.button == 3):
+                self.attacking = False
 
-    def hundleMouseMove(self, event):
-        x = event.pos[0]-400
-        y = event.pos[1]-300
-        self.angle = -math.atan2(x, y)/3.1415*180.0 - 90;
+    def handleMouseMove(self, event):
+        if self.life>0:
+            x = event.pos[0]-400
+            y = event.pos[1]-300
+            self.angle = -math.atan2(x, y)/3.1415*180.0 - 90;

@@ -40,6 +40,7 @@ class GameObject:
 
     def render_floor(self):
         glPushMatrix()
+        glRotatef(self.angle,0,0,1)
         glBindTexture(GL_TEXTURE_2D, self.texture)
         glBegin(GL_QUADS)
         glTexCoord(0, 0)

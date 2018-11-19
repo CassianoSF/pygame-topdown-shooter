@@ -27,6 +27,7 @@ class Zombie:
         self.move = False
         self.action_begin = 0
         self.action_time = 0
+        self.max_life = life
 
 
     def boxColision(self, boxes, x_ahead, y_ahead):
@@ -46,6 +47,7 @@ class Zombie:
     def update(self, player, boxes):
         if not self.died:
             if(self.life < 0):
+                player.score += self.max_life / 20
                 self.died = True
 
             if (pygame.time.get_ticks()-self.action_begin)/1000 > self.action_time:
@@ -62,8 +64,8 @@ class Zombie:
             angle_to_zombie = (int(player.angle + math.atan2(dx, dy)/3.1415*180.0) % 360) - 270
             on_player_sight = (angle_to_zombie < +player.gun.accuracy+5 and angle_to_zombie > -player.gun.accuracy) or (angle_to_zombie > -45 and angle_to_zombie < +45 and player_distance < 200)
             if (on_player_sight and player.shootTiming()):
-                self.x = self.x - player.gun.knockback*math.cos((self.angle-180) * 3.1415 / 180);
-                self.y = self.y - player.gun.knockback*math.sin((self.angle-180) * 3.1415 / 180);
+                self.x = self.x - player.gun.knockback*math.cos((self.angle-185) * 3.1415 / 180);
+                self.y = self.y - player.gun.knockback*math.sin((self.angle-185) * 3.1415 / 180);
                 self.life -= player.gun.damage
                 self.taking_hit = True
                 self.action = "follow"
@@ -99,6 +101,9 @@ class Zombie:
             if player_distance < 31:
                 self.animation = "attack"
                 player.takeHit()
+            else:
+                self.animation = "move"
+
 
             if self.action == "turn_rigth":
                 self.angle += 1
