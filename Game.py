@@ -150,9 +150,9 @@ if __name__ == "__main__":
     #                Gun(name,         damage,rate,reload_time,cap,bullets,accuracy,price,available)
     flashlight =     Gun("flashlight", 10,    1,   0,          1,  1,      180,     0,     True,  50)
     knife =          Gun("knife",      34,    1,   0,          1,  1,      180,     0,     True,  50)
-    handgun =        Gun("handgun",    25,    3,   2,          8,  8,      10,      100,   False, 20)
-    shotgun =        Gun("shotgun",    50,    1,   6,          4,  4,      20,      1000,  False, 100)
-    rifle =          Gun("rifle",      20,    9,   4,          25, 25,     5,       10000, False, 20)
+    handgun =        Gun("handgun",    25,    3,   2,          11, 11,      10,      100,   False, 20)
+    shotgun =        Gun("shotgun",    50,    1,   6,          7,  7,      20,      1000,  False, 100)
+    rifle =          Gun("rifle",      20,    9,   4,          31, 31,     5,       10000, False, 20)
     inventory = {
         'flashlight': flashlight,
         'knife': knife,
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1], -randint(200,5000), -randint(200,5000), randint(0, 360)) for i in range(100)]
     boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1], -randint(200,5000),  randint(200,5000), randint(0, 360)) for i in range(100)]
 
-    player = Player(100, 100, textures, 0,  0, 0, inventory, 5, sound) # May be the player
+    player = Player(100, 100, textures, 0,  0, 0, inventory, 5, sound) # May be the player, but not sure
 
     hud = HUD() # Heads-Up-Display
     player_name = HUD() # Heads-Up-Display
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
         if(player.life>0):
             score.setText("SCORE: "+str(player.score))
-            hud.setText("ammo: "+ str(player.gun.bullets) + "-"+ str(player.gun.cap)  + "  ---  " + "life: " + str(player.life))
+            hud.setText("ammo: "+ str(player.gun.bullets-1) + "-"+ str(player.gun.cap-1)  + "  ---  " + "life: " + str(player.life))
         elif hud.text[0:9] != "GAME OVER":
             hud.setText("GAME OVER")
         if dead_zombies == 80:
