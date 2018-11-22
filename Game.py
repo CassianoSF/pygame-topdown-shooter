@@ -27,17 +27,32 @@
 # Time Handle                                                                        #
 # Sounds                                                                             #
 # HUD                                                                                #
-# Rank Score                                                                         #
 #====================================================================================#
+# TODOS
+# Rank Score
+# Shot Projectiles and colisions
+# Menu with pause game, quit, continue, show controls
+# Limited ammo
+# Shop for weapons, upgrades and ammo
+# More scenario gameObjects
+# Search money and ammo on some gameObjects
+# More zombie types
+# Pick animation
+# Fog
+# More floor textures
+# Use shaders
 
-import pygame, sys, os
-import pprint
-import importlib
 
-from random import randint
+
+import pygame, os, sys
+
+from ctypes import *
 from pygame.locals import *
+from random import randint
 from OpenGL.GL import *
 from OpenGL.GLU import *
+
+
 from GameObject import GameObject 
 from Player import Player 
 from Zombie import Zombie  
@@ -45,11 +60,8 @@ from Gun import Gun
 from HUD import HUD  
 
 
-pp = pprint.PrettyPrinter(indent=4)
 menu = False
 
-def ap(s):
-    pp.pprint(s)
 
 def updateGame():
     pass
