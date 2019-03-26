@@ -2,7 +2,7 @@ import OpenGL, PIL, pygame, numpy, pyrr, math, sys, os
 
 from OpenGL.GL import *
 from PIL import Image
-from pyrr import Matrix44, Vector4, Vector3, Quaternion
+from pyrr import Matrix44, Matrix33, Vector4, Vector3, Quaternion
 
 VERT_DATA = numpy.array([1.5, 1.5, 0.0,
                          1.5, -1.5, 0.0,
@@ -141,15 +141,6 @@ class Texture():
 class GLProgram:
     def __init__(self):
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
-        self.mvp_matrix = self.projection()
-        self.gl_buffers()
-        self.cube_model_matrix, self.cube_view_matrix, self.cube_proj_matrix = self.gl_translate(Vector3([1.0, 1.0, 1.0]), 45.0, Vector3([0.5, 0.5, 0.5]))
-        self.cube_mvp = self.gl_translate3(Vector3([1.0, 1.0, 1.0]), -45.0, Vector3([0.5, 0.5, 0.5]))
-
-    def gl_texture(self, texture_path):
-        return 0
-
-    def gl_buffers(self):
         self.va = VertexArray()
 
         self.vb_positions = VertexBuffer(VERT_DATA)
@@ -162,67 +153,49 @@ class GLProgram:
 
         self.texture = Texture("./textures/the_floor/the_floor/floor_2.png")
 
-    def projection(self):
-        scale_matrix = pyrr.matrix44.create_from_scale(Vector3([1, 1, 1]))
-        rot_matrix = Matrix44.identity()
-        trans_matrix = pyrr.matrix44.create_from_translation(Vector3([1, 1, 0]))
+        model = {
+            'translation': [0.0, 0.0, 0.0],
+            'rotation':    [0.0, 0.0, 0.0],
+            'scale':       [1.0, 1.0, 1.0]
+        }
+        view = {
+            'position': [0.0, 0.0, 6.0],
+            'target':   [0.0, 0.0, 0.0],
+            'up':       [0.0, 1.0, 0.0]
+        }
+        projection = {
+            'fovy':   45.0, 
+            'aspect': WINDOW_WIDTH/WINDOW_HEIGHT,
+            'near':   0.1,
+            'far':    200.0,
+            'dtype':  None 
+        }
 
-        model_matrix = scale_matrix * rot_matrix * trans_matrix
-        view_matrix = pyrr.matrix44.create_look_at(
-            numpy.array([4, 3, 3]), 
-            numpy.array([1, 1, 0]), 
-            numpy.array([0, 1, 0])
-        )
-        proj_matrix = pyrr.matrix44.create_perspective_projection_matrix(45.0, 1280/720, 0.1, 1000.0)
-        mvp_matrix = proj_matrix * view_matrix * model_matrix
+        self.mvp = self.mvp(model, view, projection)
 
-        return mvp_matrix
-
-    def gl_translate(self, translation, rotation, scale):
-        trans_matrix = pyrr.matrix44.create_from_translation(translation)
-        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_y_rotation(rotation))
-        scale_matrix = numpy.transpose(pyrr.matrix44.create_from_scale(scale))
-
-        model_matrix = scale_matrix * rot_matrix * trans_matrix
-        view_matrix = pyrr.matrix44.create_look_at(
-            numpy.array([2.0, 2.0, 3.0], dtype="float32"),
-            numpy.array([0.0, 0.0, 0.0], dtype="float32"),
-            numpy.array([0.0, 1.0, 0.0], dtype="float32")
-        )
-        proj_matrix = pyrr.matrix44.create_perspective_projection(45.0, WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 200.0)
-
-        return model_matrix, view_matrix, proj_matrix
-
-    def gl_translate2(self, translation, rotation, scale):
-        trans_matrix = pyrr.matrix44.create_from_translation(translation)
-        rot_matrix = pyrr.matrix44.create_from_y_rotation(rotation)
-        scale_matrix = pyrr.matrix44.create_from_scale(scale)
-
-        model_matrix = numpy.matmul(numpy.matmul(scale_matrix,rot_matrix),trans_matrix)
-        view_matrix = pyrr.matrix44.create_look_at(
-            numpy.array([2.0, 2.0, 3.0], dtype="float32"),
-            numpy.array([0.0, 0.0, 0.0], dtype="float32"),
-            numpy.array([0.0, 1.0, 0.0], dtype="float32")
-        )
-        proj_matrix = pyrr.matrix44.create_perspective_projection(45.0, WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 200.0)
-        m = numpy.matmul(numpy.matmul(model_matrix,view_matrix),proj_matrix) 
-
-        return m
-
-    def gl_translate3(self, translation, rotation, scale):
-        trans_matrix = numpy.transpose(pyrr.matrix44.create_from_translation(translation))
-        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_y_rotation(rotation))
-        scale_matrix = numpy.transpose(pyrr.matrix44.create_from_scale(scale))
-
+    def mvp(self, model, view, projection):
+        trans_matrix = numpy.transpose(pyrr.matrix44.create_from_translation(model['translation']))
+        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_x_rotation(model['rotation'][0]))
+        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_y_rotation(model['rotation'][1]))
+        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_z_rotation(model['rotation'][2]))
+        scale_matrix = numpy.transpose(pyrr.matrix44.create_from_scale(model['scale'] ))
         model_matrix = numpy.matmul(numpy.matmul(trans_matrix,rot_matrix),scale_matrix)
-        view_matrix = numpy.transpose(pyrr.matrix44.create_look_at(
-            numpy.array([2.0, 2.0, 3.0], dtype="float32"),
-            numpy.array([0.0, 0.0, 0.0], dtype="float32"),
-            numpy.array([0.0, 1.0, 0.0], dtype="float32"))
-        )
-        proj_matrix = numpy.transpose(pyrr.matrix44.create_perspective_projection(45.0, WINDOW_WIDTH/WINDOW_HEIGHT, 0.1, 200.0))
-        m = numpy.matmul(numpy.matmul(proj_matrix,view_matrix),model_matrix) 
 
+        view_matrix = numpy.transpose(pyrr.matrix44.create_look_at(
+            numpy.array(view['position'], dtype="float32"),
+            numpy.array(view['target'],   dtype="float32"),
+            numpy.array(view['up'],       dtype="float32")
+        ))
+
+        proj_matrix = numpy.transpose(pyrr.matrix44.create_perspective_projection(
+            projection['fovy'],
+            projection['aspect'],
+            projection['near'],
+            projection['far'],
+            projection['dtype']
+        ))
+
+        m = numpy.matmul(numpy.matmul(proj_matrix,view_matrix),model_matrix) 
         return numpy.transpose(m)
 
     def display(self):
@@ -240,15 +213,9 @@ class GLProgram:
 
         texture_uniform = glGetUniformLocation(self.shader.id, "the_texture")
         glUniform1i(texture_uniform, 0)
-
         trans_uniform = glGetUniformLocation(self.shader.id, "mvp")
-        glUniformMatrix4fv(trans_uniform, 1, GL_FALSE, self.cube_mvp)
-        model_location = glGetUniformLocation(self.shader.id, "model")
-        glUniformMatrix4fv(model_location, 1, GL_FALSE, self.cube_model_matrix)
-        view_location = glGetUniformLocation(self.shader.id, "view")
-        glUniformMatrix4fv(view_location, 1, GL_FALSE, self.cube_view_matrix)
-        proj_location = glGetUniformLocation(self.shader.id, "proj")
-        glUniformMatrix4fv(proj_location, 1, GL_FALSE, self.cube_proj_matrix)
+        glUniformMatrix4fv(trans_uniform, 1, GL_FALSE, self.mvp)
+
 
         self.va.bind()
 
