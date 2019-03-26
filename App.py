@@ -4,10 +4,18 @@ from OpenGL.GL import *
 from PIL import Image
 from pyrr import Matrix44, Matrix33, Vector4, Vector3, Quaternion
 
+from Object import Object
+
 VERT_DATA = numpy.array([0.5, 0.5, 0.0,
                          0.5, -0.5, 0.0,
                         -0.5, -0.5, 0.0,
                         -0.5, 0.5, 0.0],
+                        dtype="float32")
+
+VERT_DATA_2 = numpy.array([-0.5, -0.5, 0.0,
+                         -0.5, -1.5, 0.0,
+                        -1.5, -1.5, 0.0,
+                        -1.5, -0.5, 0.0],
                         dtype="float32")
 
 TEXTURE_COORD_DATA = numpy.array([1.0, 1.0,
@@ -134,11 +142,14 @@ class Texture():
 
 class App:
     def __init__(self):
+
+        cube = Object("cube.obj")
+
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
         self.va = VertexArray()
 
-        self.vb_positions = VertexBuffer(VERT_DATA)
-        self.va.add_buffer(0, 3, self.vb_positions)
+        self.vb_box_1 = VertexBuffer(VERT_DATA)
+        self.va.add_buffer(0, 3, self.vb_box_1)
 
         self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
         self.va.add_buffer(1, 2, self.vb_texture)
@@ -153,7 +164,7 @@ class App:
             'scale':       [1.0, 1.0, 1.0]
         }
         view = {
-            'position': [0.0, 0.0, 6.0],
+            'position': [0.0, 0.0, 12.0],
             'target':   [0.0, 0.0, 0.0],
             'up':       [0.0, 1.0, 0.0]
         }
@@ -214,7 +225,7 @@ class App:
 
         self.va.bind()
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, None)
         self.shader.unbind()
 
     def handle_event(self, event):
@@ -227,7 +238,7 @@ class App:
 def main():
     pygame.init()
     os.environ['SDL_VIDEO_CENTERED'] = '1'
-    pygame.display.set_caption("3D Graphics")
+    pygame.display.set_caption("APP")
     pygame.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT), pygame.DOUBLEBUF | pygame.OPENGL)
     clock = pygame.time.Clock()
     app = App()
