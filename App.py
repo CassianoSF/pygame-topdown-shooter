@@ -4,10 +4,10 @@ from OpenGL.GL import *
 from PIL import Image
 from pyrr import Matrix44, Matrix33, Vector4, Vector3, Quaternion
 
-VERT_DATA = numpy.array([1.5, 1.5, 0.0,
-                         1.5, -1.5, 0.0,
-                        -1.5, -1.5, 0.0,
-                        -1.5, 1.5, 0.0],
+VERT_DATA = numpy.array([0.5, 0.5, 0.0,
+                         0.5, -0.5, 0.0,
+                        -0.5, -0.5, 0.0,
+                        -0.5, 0.5, 0.0],
                         dtype="float32")
 
 COLOR_DATA = numpy.array([1.0, 0.0, 0.0, 1.0,
@@ -17,9 +17,9 @@ COLOR_DATA = numpy.array([1.0, 0.0, 0.0, 1.0,
                           dtype="float32")
 
 TEXTURE_COORD_DATA = numpy.array([1.0, 1.0,
-                                  1.0, -1.0,
-                                 -1.0, -1.0,
-                                 -1.0, 1.0],
+                                  1.0, 0.0,
+                                  0.0, 0.0,
+                                  0.0, 1.0],
                                  dtype="float32")
 
 INDICES = numpy.array([0, 1, 3,
@@ -124,8 +124,8 @@ class Texture():
         glBindTexture(GL_TEXTURE_2D, self.id)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_surface) 
         glBindTexture(GL_TEXTURE_2D, 0)
 
@@ -151,7 +151,7 @@ class GLProgram:
 
         self.ib = IndexBuffer(INDICES)
 
-        self.texture = Texture("./textures/the_floor/the_floor/floor_2.png")
+        self.texture = Texture("./textures/the_floor/the_floor/crate_1.png")
 
         model = {
             'translation': [0.0, 0.0, 0.0],
@@ -207,15 +207,16 @@ class GLProgram:
         self.shader.bind()
         self.texture.bind()
 
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        # Transparency
+        glEnable(GL_BLEND)
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
 
         texture_uniform = glGetUniformLocation(self.shader.id, "the_texture")
         glUniform1i(texture_uniform, 0)
+
         trans_uniform = glGetUniformLocation(self.shader.id, "mvp")
         glUniformMatrix4fv(trans_uniform, 1, GL_FALSE, self.mvp)
-
 
         self.va.bind()
 
