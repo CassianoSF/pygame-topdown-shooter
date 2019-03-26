@@ -10,12 +10,6 @@ VERT_DATA = numpy.array([0.5, 0.5, 0.0,
                         -0.5, 0.5, 0.0],
                         dtype="float32")
 
-COLOR_DATA = numpy.array([1.0, 0.0, 0.0, 1.0,
-                          0.0, 1.0, 0.0, 1.0,
-                          0.0, 0.0, 1.0, 1.0,
-                          0.0, 1.0, 1.0, 1.0],
-                          dtype="float32")
-
 TEXTURE_COORD_DATA = numpy.array([1.0, 1.0,
                                   1.0, 0.0,
                                   0.0, 0.0,
@@ -234,7 +228,7 @@ def main():
     pygame.init()
     os.environ['SDL_VIDEO_CENTERED'] = '1'
     pygame.display.set_caption("3D Graphics")
-    pygame.display.set_mode((1280, 720), pygame.DOUBLEBUF | pygame.OPENGL)
+    pygame.display.set_mode((WINDOW_WIDTH,WINDOW_HEIGHT), pygame.DOUBLEBUF | pygame.OPENGL)
     clock = pygame.time.Clock()
     app = App()
 
