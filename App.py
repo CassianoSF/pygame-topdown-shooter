@@ -4,10 +4,10 @@ from OpenGL.GL import *
 from PIL import Image
 from pyrr import Matrix44, Vector4, Vector3, Quaternion
 
-VERT_DATA = numpy.array([0.5, 0.5, 0.0,
-                         0.5, -0.5, 0.0,
-                        -0.5, -0.5, 0.0,
-                        -0.5, 0.5, 0.0],
+VERT_DATA = numpy.array([1.5, 1.5, 0.0,
+                         1.5, -1.5, 0.0,
+                        -1.5, -1.5, 0.0,
+                        -1.5, 1.5, 0.0],
                         dtype="float32")
 
 COLOR_DATA = numpy.array([1.0, 0.0, 0.0, 1.0,
@@ -16,10 +16,10 @@ COLOR_DATA = numpy.array([1.0, 0.0, 0.0, 1.0,
                           0.0, 1.0, 1.0, 1.0],
                           dtype="float32")
 
-TEXTURE_COORD_DATA = numpy.array([0.5, 0.5,
-                                  0.5, -0.5,
-                                 -0.5, -0.5,
-                                 -0.5, 0.5],
+TEXTURE_COORD_DATA = numpy.array([1.0, 1.0,
+                                  1.0, -1.0,
+                                 -1.0, -1.0,
+                                 -1.0, 1.0],
                                  dtype="float32")
 
 INDICES = numpy.array([0, 1, 3,
@@ -115,6 +115,29 @@ class IndexBuffer():
     def unbind(self):
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
 
+class Texture():
+    def __init__(self, path):
+        self.id = glGenTextures(1)
+        tex = pygame.image.load(path)
+        tex_surface = pygame.image.tostring(tex, 'RGBA')
+        tex_width, tex_height = tex.get_size()
+        glBindTexture(GL_TEXTURE_2D, self.id)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_surface) 
+        glBindTexture(GL_TEXTURE_2D, 0)
+
+    def delete(self):
+        glDeleteTextures(1, self.id) 
+
+    def bind(self):
+        glBindTexture(GL_TEXTURE_2D, self.id)
+
+    def unbind(self):
+        glBindTexture(GL_TEXTURE_2D, 0)
+
 class GLProgram:
     def __init__(self):
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
@@ -137,7 +160,7 @@ class GLProgram:
 
         self.ib = IndexBuffer(INDICES)
 
-        self.brick_texture = self.gl_texture("check.jpg")
+        self.texture = Texture("./textures/the_floor/the_floor/floor_2.png")
 
     def projection(self):
         scale_matrix = pyrr.matrix44.create_from_scale(Vector3([1, 1, 1]))
@@ -209,8 +232,12 @@ class GLProgram:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         self.shader.bind()
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, self.brick_texture)
+        self.texture.bind()
+
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         texture_uniform = glGetUniformLocation(self.shader.id, "the_texture")
         glUniform1i(texture_uniform, 0)
 
@@ -222,6 +249,7 @@ class GLProgram:
         glUniformMatrix4fv(view_location, 1, GL_FALSE, self.cube_view_matrix)
         proj_location = glGetUniformLocation(self.shader.id, "proj")
         glUniformMatrix4fv(proj_location, 1, GL_FALSE, self.cube_proj_matrix)
+
         self.va.bind()
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
