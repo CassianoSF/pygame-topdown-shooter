@@ -138,7 +138,7 @@ class Texture():
     def unbind(self):
         glBindTexture(GL_TEXTURE_2D, 0)
 
-class GLProgram:
+class App:
     def __init__(self):
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
         self.va = VertexArray()
@@ -198,7 +198,7 @@ class GLProgram:
         m = numpy.matmul(numpy.matmul(proj_matrix,view_matrix),model_matrix) 
         return numpy.transpose(m)
 
-    def display(self):
+    def render(self):
         glEnable(GL_DEPTH_TEST)
 
         glClearColor(0.0, 0.0, 0.0, 1.0)
@@ -223,6 +223,12 @@ class GLProgram:
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
         self.shader.unbind()
 
+    def handle_event(self, event):
+        print(event)
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
 
 def main():
     pygame.init()
@@ -230,16 +236,13 @@ def main():
     pygame.display.set_caption("3D Graphics")
     pygame.display.set_mode((1280, 720), pygame.DOUBLEBUF | pygame.OPENGL)
     clock = pygame.time.Clock()
-    gl = GLProgram()
+    app = App()
 
     while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        [app.handle_event(event) for event in pygame.event.get()]
 
         clock.tick(60)
-        gl.display()
+        app.render()
         pygame.display.flip()
 
 if __name__ == "__main__":
