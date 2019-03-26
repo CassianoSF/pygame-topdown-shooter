@@ -148,7 +148,7 @@ class Zombie:
             if self.animation == "move":
                 gambiarra = 30
 
-            glBindTexture(GL_TEXTURE_2D, animation[clock % len(animation)])
+            glBindTexture(GL_TEXTURE_2D, animation[int(clock % len(animation))])
             glBegin(GL_QUADS)
             glTexCoord(0, 0)
             glVertex( (self.width+gambiarra)/2.,  (self.height+gambiarra)/2., 0)

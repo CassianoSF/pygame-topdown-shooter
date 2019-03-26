@@ -174,18 +174,19 @@ if __name__ == "__main__":
     }
     
     #           Zombie(height, width, textures,  x,                  y,                 angle,          life, speed)
-    zombies =  [Zombie(100,    100,   textures,  randint(200,2000),  randint(200,2000), randint(0,360), 100,  5.5) for i in range(20)]
-    zombies += [Zombie(100,    100,   textures,  randint(200,2000), -randint(200,2000), randint(0,360), 100,  5.5) for i in range(20)]
-    zombies += [Zombie(100,    100,   textures, -randint(200,2000), -randint(200,2000), randint(0,360), 100,  5.5) for i in range(20)]
-    zombies += [Zombie(100,    100,   textures, -randint(200,2000),  randint(200,2000), randint(0,360), 100,  5.5) for i in range(20)]
+    # zombies =  []
+    zombies =  [Zombie(100,    100,   textures,  randint(200,2000),  randint(200,2000), randint(0,360), 100,  2.5) for i in range(20)]
+    zombies += [Zombie(100,    100,   textures,  randint(200,2000), -randint(200,2000), randint(0,360), 100,  2.5) for i in range(20)]
+    zombies += [Zombie(100,    100,   textures, -randint(200,2000), -randint(200,2000), randint(0,360), 100,  2.5) for i in range(20)]
+    zombies += [Zombie(100,    100,   textures, -randint(200,2000),  randint(200,2000), randint(0,360), 100,  2.5) for i in range(20)]
 
     #         GameObject( height, width, texture,                               x,  y,   angle)
     floor =   GameObject(100000, 100000, textures['the_floor']['the_floor'][2], 0,  0,   10)
     #          GameObject(height, width, texture,                                x,                 y,                  angle)
-    boxes =  [ GameObject(200,    200,   textures['the_floor']['the_floor'][1],  randint(200,5000),  randint(200,5000), randint(0, 360)) for i in range(100)]
-    boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1],  randint(200,5000), -randint(200,5000), randint(0, 360)) for i in range(100)]
-    boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1], -randint(200,5000), -randint(200,5000), randint(0, 360)) for i in range(100)]
-    boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1], -randint(200,5000),  randint(200,5000), randint(0, 360)) for i in range(100)]
+    boxes =  [ GameObject(200,    200,   textures['the_floor']['the_floor'][1],  randint(200,5000),  randint(200,5000), randint(0, 360)) for i in range(20)]
+    boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1],  randint(200,5000), -randint(200,5000), randint(0, 360)) for i in range(20)]
+    boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1], -randint(200,5000), -randint(200,5000), randint(0, 360)) for i in range(20)]
+    boxes += [ GameObject(200,    200,   textures['the_floor']['the_floor'][1], -randint(200,5000),  randint(200,5000), randint(0, 360)) for i in range(20)]
 
     player = Player(100, 100, textures, 0,  0, 0, inventory, 5, sound) # May be the player, but not sure
 
@@ -222,7 +223,7 @@ if __name__ == "__main__":
                 zombie.speed = zombie.speed+1
                 zombie.died = False
 
-        clock = pygame.time.get_ticks() / 50             # Set frame lenght for animations
+        clock = pygame.time.get_ticks() / 40             # Set frame lenght for animations
         glTranslatef(1000/2-player.x,768/2-player.y,50)  # Translate camera to player position
         if(player.shooting and player.shootTiming()):    # Screen shake on shoot 
             glTranslatef(3,3,0)

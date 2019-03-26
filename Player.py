@@ -78,7 +78,7 @@ class Player:
             glTranslatef(0*40, 0*40, 0)
             gambiarra = 8
 
-        glBindTexture(GL_TEXTURE_2D, animation[clock % len(animation)])
+        glBindTexture(GL_TEXTURE_2D, animation[int(clock % len(animation))])
         glBegin(GL_QUADS)
         glTexCoord(0, 0)
         glVertex( (self.width+gambiarra*4)/2.,  (self.height+gambiarra*4)/2., 0)
@@ -194,6 +194,7 @@ class Player:
 
 
     def handleKeyDown(self, event):
+        print(event)
         if self.life>0:
             self.key_states[event.scancode] = 1
             if(self.key_states[10]):
