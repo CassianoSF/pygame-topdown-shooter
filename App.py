@@ -40,14 +40,19 @@ class App:
         cube = Object("cube.obj")
 
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
-        self.va = VertexArray()
-
+        
+        self.va1 = VertexArray()
         self.vb_box_1 = VertexBuffer(VERT_DATA)
-        self.va.add_buffer(0, 3, self.vb_box_1)
-
+        self.va1.add_buffer(0, 3, self.vb_box_1)
         self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
-        self.va.add_buffer(1, 2, self.vb_texture)
+        self.va1.add_buffer(1, 2, self.vb_texture)
+        self.ib = IndexBuffer(INDICES)
 
+        self.va2 = VertexArray()
+        self.vb_box_2 = VertexBuffer(VERT_DATA_2)
+        self.va2.add_buffer(0, 3, self.vb_box_2)
+        self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
+        self.va2.add_buffer(1, 2, self.vb_texture)
         self.ib = IndexBuffer(INDICES)
 
         self.texture = Texture("./textures/the_floor/the_floor/crate_1.png")
@@ -120,10 +125,15 @@ class App:
         trans_uniform = glGetUniformLocation(self.shader.id, "mvp")
         glUniformMatrix4fv(trans_uniform, 1, GL_FALSE, self.mvp)
 
-        self.va.bind()
+        self.va1.bind()
 
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, None)
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
+
+        self.va2.bind()
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
         self.shader.unbind()
+
 
     def move(self):
         pressed = pygame.key.get_pressed()
