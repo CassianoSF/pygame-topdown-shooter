@@ -1,10 +1,11 @@
-import OpenGL, PIL, pygame, numpy, pyrr, math, sys, os
-
+import pygame, numpy, pyrr, math, os, string
 from OpenGL.GL import *
-from PIL import Image
-from pyrr import Matrix44, Matrix33, Vector4, Vector3, Quaternion
-
+from Shader import Shader
 from Object import Object
+from VertexBuffer import VertexBuffer
+from VertexArray import VertexArray
+from IndexBuffer import IndexBuffer
+from Texture import Texture
 
 VERT_DATA = numpy.array([0.5, 0.5, 0.0,
                          0.5, -0.5, 0.0,
@@ -32,113 +33,6 @@ WINDOW_WIDTH=1280
 WINDOW_HEIGHT=720
 
 
-class Shader:
-    def __init__(self, frag_path, vert_path):
-        self.id = glCreateProgram()
-        vertex_shader = glCreateShader(GL_VERTEX_SHADER)
-        fragment_shader = glCreateShader(GL_FRAGMENT_SHADER)
-
-        with open(frag_path, "r") as vert_file:
-            vert_source = vert_file.read()
-        with open(vert_path, "r") as frag_file:
-            frag_source = frag_file.read()
-
-        glShaderSource(vertex_shader, vert_source)
-        glShaderSource(fragment_shader, frag_source)
-
-        glCompileShader(vertex_shader)
-        if not glGetShaderiv(vertex_shader, GL_COMPILE_STATUS):
-            info_log = glGetShaderInfoLog(vertex_shader)
-            print ("Compilation Failure for " + vertex_shader + " shader:\n" + info_log)
-
-        glCompileShader(fragment_shader)
-        if not glGetShaderiv(fragment_shader, GL_COMPILE_STATUS):
-            info_log = glGetShaderInfoLog(fragment_shader)
-            print ("Compilation Failure for " + fragment_shader + " shader:\n" + info_log)
-
-        glAttachShader(self.id, vertex_shader)
-        glAttachShader(self.id, fragment_shader)
-
-        glLinkProgram(self.id)
-
-        glDeleteShader(vertex_shader)
-        glDeleteShader(fragment_shader)
-
-    def bind(self):
-        glUseProgram(self.id)
-
-    def unbind(self):
-        glUseProgram(0)
-
-
-class VertexBuffer:
-    def __init__(self, data):
-        self.id = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.id)
-        glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
-
-    def delete(self):
-        glDeleteBuffers(1, self.id)
-
-    def bind(self):
-        glBindBuffer(GL_ARRAY_BUFFER, self.id)
-
-    def unbind(self):
-        glBindBuffer(GL_ARRAY_BUFFER, 0)
-
-class VertexArray:
-    def __init__(self):
-        self.id = glGenVertexArrays(1)
-
-    def delete(self):
-        glDeleteVertexArrays(1, self.id)
-
-    def add_buffer(self, index, count, vb):
-        self.bind() 
-        vb.bind()
-        glEnableVertexAttribArray(index)
-        glVertexAttribPointer(index, count, GL_FLOAT, GL_FALSE, 0, None)
-
-    def bind(self):
-        glBindVertexArray(self.id)
-
-    def unbind(self):
-        glBindVertexArray(0)
-
-class IndexBuffer():
-    def __init__(self, indices):
-        self.id = glGenBuffers(1)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.id)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW)
-
-    def bind(self):
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.id)
-
-    def unbind(self):
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
-
-class Texture():
-    def __init__(self, path):
-        self.id = glGenTextures(1)
-        tex = pygame.image.load(path)
-        tex_surface = pygame.image.tostring(tex, 'RGBA')
-        tex_width, tex_height = tex.get_size()
-        glBindTexture(GL_TEXTURE_2D, self.id)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_surface) 
-        glBindTexture(GL_TEXTURE_2D, 0)
-
-    def delete(self):
-        glDeleteTextures(1, self.id) 
-
-    def bind(self):
-        glBindTexture(GL_TEXTURE_2D, self.id)
-
-    def unbind(self):
-        glBindTexture(GL_TEXTURE_2D, 0)
 
 class App:
     def __init__(self):
@@ -158,31 +52,32 @@ class App:
 
         self.texture = Texture("./textures/the_floor/the_floor/crate_1.png")
 
-        model = {
+        self.model = {
             'translation': [0.0, 0.0, 0.0],
             'rotation':    [0.0, 0.0, 0.0],
             'scale':       [1.0, 1.0, 1.0]
         }
-        view = {
+        self.view = {
             'position': [0.0, 0.0, 12.0],
             'target':   [0.0, 0.0, 0.0],
             'up':       [0.0, 1.0, 0.0]
         }
-        projection = {
+        self.projection = {
             'fovy':   45.0, 
             'aspect': WINDOW_WIDTH/WINDOW_HEIGHT,
             'near':   0.1,
             'far':    200.0,
             'dtype':  None 
         }
+        self.mvp = self.mount_mvp(self.model, self.view, self.projection)
+        self.key_state = list(map(lambda x :0, list(range(500))))
 
-        self.mvp = self.mvp(model, view, projection)
-
-    def mvp(self, model, view, projection):
+    def mount_mvp(self, model, view, projection):
         trans_matrix = numpy.transpose(pyrr.matrix44.create_from_translation(model['translation']))
-        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_x_rotation(model['rotation'][0]))
-        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_y_rotation(model['rotation'][1]))
-        rot_matrix = numpy.transpose(pyrr.matrix44.create_from_z_rotation(model['rotation'][2]))
+        rot_matrix_x = numpy.transpose(pyrr.matrix44.create_from_x_rotation(model['rotation'][0]))
+        rot_matrix_y = numpy.transpose(pyrr.matrix44.create_from_y_rotation(model['rotation'][1]))
+        rot_matrix_z = numpy.transpose(pyrr.matrix44.create_from_z_rotation(model['rotation'][2]))
+        rot_matrix = numpy.matmul(numpy.matmul(rot_matrix_x, rot_matrix_y),rot_matrix_z)
         scale_matrix = numpy.transpose(pyrr.matrix44.create_from_scale(model['scale'] ))
         model_matrix = numpy.matmul(numpy.matmul(trans_matrix,rot_matrix),scale_matrix)
 
@@ -204,6 +99,8 @@ class App:
         return numpy.transpose(m)
 
     def render(self):
+        self.move()
+        self.mvp = self.mount_mvp(self.model, self.view, self.projection)
         glEnable(GL_DEPTH_TEST)
 
         glClearColor(0.0, 0.0, 0.0, 1.0)
@@ -228,12 +125,29 @@ class App:
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, None)
         self.shader.unbind()
 
+    def move(self):
+        pressed = pygame.key.get_pressed()
+        if pressed[pygame.K_UP]:
+            self.model['rotation'][0] -= 0.03
+        if pressed[pygame.K_DOWN]:
+            self.model['rotation'][0] += 0.03
+        if pressed[pygame.K_LEFT]:
+            self.model['rotation'][2] -= 0.03
+        if pressed[pygame.K_RIGHT]:
+            self.model['rotation'][2] += 0.03
+        if pressed[pygame.K_a]:
+            self.model['rotation'][1] -= 0.03
+        if pressed[pygame.K_d]:
+            self.model['rotation'][1] += 0.03
+        if pressed[pygame.K_w]:
+            self.view['position'][2] -= 0.1
+        if pressed[pygame.K_s]:
+            self.view['position'][2] += 0.1
+
     def handle_event(self, event):
-        print(event)
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-
 
 def main():
     pygame.init()

@@ -7,6 +7,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from random import randint
 
+
 class Player:
     def __init__(self, height, width, textures, x, y, angle, inventory, speed, sound):
         self.textures = textures
