@@ -12,20 +12,17 @@ WINDOW_HEIGHT=720
 
 class App:
     def __init__(self):
+        suzanne = Object("../res/suzanne.obj")
         cube = Object("../res/cube.obj")
-
-        print(cube.vertices)
-        print(cube.tex_map)
-        print(cube.indices)
 
         self.texture = Texture("../textures/the_floor/the_floor/crate_1.png")
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
         self.va1 = VertexArray()
-        self.vb_box_1 = VertexBuffer(cube.vertices)
+        self.vb_box_1 = VertexBuffer(suzanne.vertices)
         self.va1.add_buffer(0, 3, self.vb_box_1)
-        self.vb_texture = VertexBuffer(cube.tex_map)
+        self.vb_texture = VertexBuffer(suzanne.tex_map)
         self.va1.add_buffer(1, 3, self.vb_texture)
-        self.ib = IndexBuffer(cube.indices)
+        self.ib = IndexBuffer(suzanne.indices)
 
         self.model = {
             'translation': [0.0, 0.0, 0.0],
@@ -72,7 +69,8 @@ class App:
         m = numpy.matmul(numpy.matmul(proj_matrix,view_matrix),model_matrix) 
         return numpy.transpose(m)
 
-    def draw(self, va, ib, texture, shader):
+    def draw(self, va, ib, texture, shader, mvp):
+        shader.add_uniform_matrix_4f("mvp", mvp)
         shader.bind()
         texture.bind()
         va.bind()
@@ -94,8 +92,7 @@ class App:
         self.shader.add_uniform_1i("the_texture", 0)
 
         self.mvp = self.motion(self.model, self.view, self.projection)
-        self.shader.add_uniform_matrix_4f("mvp", self.mvp)
-        self.draw(self.va1, self.ib, self.texture, self.shader)
+        self.draw(self.va1, self.ib, self.texture, self.shader, self.mvp)
 
 
     def motion(self, model, view, projection):
