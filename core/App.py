@@ -7,55 +7,137 @@ from VertexArray import VertexArray
 from IndexBuffer import IndexBuffer
 from Texture import Texture
 
-VERT_DATA = numpy.array([0.5, 0.5, 0.0,
+VERT_DATA_1 = numpy.array([
+                        -2.0, -2.0,  2.0,
+                         2.0, -2.0,  2.0,
+                        -2.0,  2.0,  2.0,
+                         2.0,  2.0,  2.0,
+                        -2.0,  2.0, -2.0,
+                         2.0,  2.0, -2.0,
+                        -2.0, -2.0, -2.0,
+                         2.0, -2.0, -2.0
+                           #  1.0,  1.0, 1.0,
+                           #  1.0, -1.0, 1.0,
+                           # -1.0, -1.0, 1.0,
+                           # -1.0,  1.0, 1.0,
+
+                           #  1.0,  1.0, -1.0,
+                           #  1.0, -1.0, -1.0,
+                           # -1.0, -1.0, -1.0,
+                           # -1.0,  1.0, -1.0
+                        ],
+                        dtype="float32")
+
+VERT_DATA_2 = numpy.array([0.5, 0.5, 0.0,
                          0.5, -0.5, 0.0,
                         -0.5, -0.5, 0.0,
                         -0.5, 0.5, 0.0],
                         dtype="float32")
 
-VERT_DATA_2 = numpy.array([-0.5, -0.5, 0.0,
-                         -0.5, -1.5, 0.0,
-                        -1.5, -1.5, 0.0,
-                        -1.5, -0.5, 0.0],
-                        dtype="float32")
 
-TEXTURE_COORD_DATA = numpy.array([1.0, 1.0,
-                                  1.0, 0.0,
-                                  0.0, 0.0,
-                                  0.0, 1.0],
+TEXTURE_COORD_DATA = numpy.array([
+                                0.0, 0.0, 0.0,
+                                1.0, 0.0, 0.0,
+                                0.0, 1.0, 0.0,
+                                1.0, 1.0, 0.0
+
+
+                                ],
                                  dtype="float32")
 
-INDICES = numpy.array([0, 1, 3,
+INDICES_1 = numpy.array([
+
+                        0, 1, 2,
+                        2, 1, 3,
+                        2, 3, 4,
+                        4, 3, 5,
+                        4, 5, 6,
+                        6, 5, 7,
+                        6, 7, 0,
+                        0, 7, 1,
+                        1, 7, 3,
+                        3, 7, 5,
+                        6, 0, 4,
+                        4, 0, 2
+
+                         # 0, 1, 3,
+                         # 1, 2, 3,
+                         # 2, 7, 3,
+                         # 2, 7, 6,
+                         # 0, 3, 4,
+                         # 7, 4, 3,
+                         # 0, 1, 5,
+                         # 0, 5, 4,
+                         # 2, 5, 6,
+                         # 1, 5, 2,
+                         # 4, 6, 7,
+                         # 4, 5, 6
+
+
+
+
+                        ],
+                       dtype="int32")
+
+INDICES_2 = numpy.array([0, 1, 3,
                        1, 2, 3],
                        dtype="int32")
 
 WINDOW_WIDTH=1280
 WINDOW_HEIGHT=720
 
-
+g_model = {
+    'translation': [0.0, 0.0, 0.0],
+    'rotation':    [0.0, 0.0, 0.0],
+    'scale':       [1.0, 1.0, 1.0]
+}
+g_view = {
+    'position': [0.0, 0.0, 12.0],
+    'target':   [0.0, 0.0, 0.0],
+    'up':       [0.0, 1.0, 0.0]
+}
+g_projection = {
+    'fovy':   45.0, 
+    'aspect': WINDOW_WIDTH/WINDOW_HEIGHT,
+    'near':   0.1,
+    'far':    200.0,
+    'dtype':  None 
+}
 
 class App:
     def __init__(self):
 
-        cube = Object("cube.obj")
+        cube = Object("../res/suzanne.obj")
+        cube.vertices
+        cube.indices
+        cube.tex_map
+        cube.normals
 
         self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
-        
+
         self.va1 = VertexArray()
-        self.vb_box_1 = VertexBuffer(VERT_DATA)
+        self.vb_box_1 = VertexBuffer(cube.vertices)
         self.va1.add_buffer(0, 3, self.vb_box_1)
-        self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
-        self.va1.add_buffer(1, 2, self.vb_texture)
-        self.ib = IndexBuffer(INDICES)
+        self.vb_texture = VertexBuffer(cube.tex_map)
+        self.va1.add_buffer(1, 3, self.vb_texture)
+        self.ib = IndexBuffer(cube.indices)
 
-        self.va2 = VertexArray()
-        self.vb_box_2 = VertexBuffer(VERT_DATA_2)
-        self.va2.add_buffer(0, 3, self.vb_box_2)
-        self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
-        self.va2.add_buffer(1, 2, self.vb_texture)
-        self.ib = IndexBuffer(INDICES)
+        
+        # self.va1 = VertexArray()
+        # self.vb_box_1 = VertexBuffer(VERT_DATA_1)
+        # self.va1.add_buffer(0, 3, self.vb_box_1)
+        # self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
+        # self.va1.add_buffer(1, 3, self.vb_texture)
+        # self.ib = IndexBuffer(INDICES_1)
 
-        self.texture = Texture("./textures/the_floor/the_floor/crate_1.png")
+        # self.va2 = VertexArray()
+        # self.vb_box_2 = VertexBuffer(VERT_DATA_2)
+        # self.va2.add_buffer(0, 3, self.vb_box_2)
+        # self.vb_texture = VertexBuffer(TEXTURE_COORD_DATA)
+        # self.va2.add_buffer(1, 2, self.vb_texture)
+        # self.ib = IndexBuffer(INDICES_2)
+
+        self.texture = Texture("../textures/the_floor/the_floor/crate_1.png")
 
         self.model = {
             'translation': [0.0, 0.0, 0.0],
@@ -103,36 +185,36 @@ class App:
         m = numpy.matmul(numpy.matmul(proj_matrix,view_matrix),model_matrix) 
         return numpy.transpose(m)
 
+    def draw(self, va, ib, texture, shader):
+        shader.bind()
+        texture.bind()
+        va.bind()
+        ib.bind()
+        glDrawElements(GL_TRIANGLES, va.size, GL_UNSIGNED_INT, None)
+        shader.unbind()
+
     def render(self):
-        self.move()
-        self.mvp = self.mount_mvp(self.model, self.view, self.projection)
         glEnable(GL_DEPTH_TEST)
 
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-        self.shader.bind()
-        self.texture.bind()
 
         # Transparency
         glEnable(GL_BLEND)
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
 
-        texture_uniform = glGetUniformLocation(self.shader.id, "the_texture")
-        glUniform1i(texture_uniform, 0)
+        self.shader.add_uniform_1i("the_texture", 0)
 
-        trans_uniform = glGetUniformLocation(self.shader.id, "mvp")
-        glUniformMatrix4fv(trans_uniform, 1, GL_FALSE, self.mvp)
+        
+        self.move()
+        self.mvp = self.mount_mvp(self.model, self.view, self.projection)
 
-        self.va1.bind()
+        self.shader.add_uniform_matrix_4f("mvp", self.mvp)
+        self.draw(self.va1, self.ib, self.texture, self.shader)
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
-
-        self.va2.bind()
-
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
-        self.shader.unbind()
+        # self.shader.add_uniform_matrix_4f("mvp", self.mvp)
+        # self.draw(self.va2, self.ib, self.texture, self.shader)
 
 
     def move(self):
