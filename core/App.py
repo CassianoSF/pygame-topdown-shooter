@@ -12,8 +12,7 @@ WINDOW_HEIGHT=720
 
 class App:
     def __init__(self):
-        # obj = Object("../res/suzanne.obj")
-        self.obj = Object("../res/cube.obj", "../textures/the_floor/the_floor/crate_1.png")
+        self.obj = Object("../res/suzanne.obj", "../textures/the_floor/the_floor/crate_1.png")
         self.obj2 = Object("../res/cube.obj", "../textures/the_floor/the_floor/crate_1.png")
 
 
@@ -76,24 +75,41 @@ class App:
         self.obj2.render(mvp2)
 
 
+    def rotate_view(self, view, degrees):
+        rotation = [
+            [ math.cos(degrees), 0.0, math.sin(degrees)],
+            [               0.0, 1.0, 0.0              ],
+            [-math.sin(degrees), 1.0, math.cos(degrees)]
+        ]
+        rotation = numpy.matrix(rotation, dtype='float32')
+        new_view = numpy.array(numpy.dot(rotation, view['up'])).flatten()
+        view['up'] = new_view
+
+
     def motion(self, model, view, projection):
         pressed = pygame.key.get_pressed()
+        if(pressed[pygame.K_r]):
+            self.view = {
+                'position': [0.0, 0.0, 12.0],
+                'target':   [0.0, 0.0, 0.0],
+                'up':       [0.0, 1.0, 0.0]
+            }
         if pressed[pygame.K_UP]:
             view['position'][1] += 0.03
         if pressed[pygame.K_DOWN]:
             view['position'][1] -= 0.03
         if pressed[pygame.K_LEFT]:
-            view['position'][2] -= 0.03
+            self.rotate_view(view, 0.001)
         if pressed[pygame.K_RIGHT]:
-            view['position'][2] += 0.03
+            self.rotate_view(view, -0.001)
         if pressed[pygame.K_a]:
             view['position'][0] -= 0.03
         if pressed[pygame.K_d]:
             view['position'][0] += 0.03
         if pressed[pygame.K_w]:
-            view['position'][2] -= 0.1
+            view['position'][2] -= 0.02
         if pressed[pygame.K_s]:
-            view['position'][2] += 0.1
+            view['position'][2] += 0.02
         return self.mount_mvp(model, view, projection)
 
     def handle_event(self, event):

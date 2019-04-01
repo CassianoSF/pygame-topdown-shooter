@@ -109,7 +109,6 @@ class Object():
             self.model['translation'][2] + z
         ]
 
-        print(self.model)
 
     def render(self, mvp):
         self.shader.add_uniform_1i("the_texture", 0)
