@@ -1,14 +1,20 @@
-import numpy
+import pygame, numpy, pyrr, math, os, string
+from OpenGL.GL import *
+from Shader import Shader
+from VertexBuffer import VertexBuffer
+from VertexArray import VertexArray
+from IndexBuffer import IndexBuffer
+from Texture import Texture
 
 class Object():
-    def __init__(self, fileName):
-        self.vertices = []
-        self.indices = []
-        self.tex_map = []
-        self.normals = []
+    def __init__(self, objFileName, textureFileName):
+        vertices = []
+        indices = []
+        tex_map = []
+        normals = []
 
         try:
-            file = open(fileName)
+            file = open(objFileName)
             temp_vertices = []
             temp_tex_map = []
             temp_normals = []
@@ -37,44 +43,79 @@ class Object():
                             n_index = int(n_index or 1) -1
 
                             if len(temp_vertices) > v_index:
-                                self.vertices.append(temp_vertices[v_index])
+                                vertices.append(temp_vertices[v_index])
 
                             if len(temp_tex_map) > t_index:
-                                self.tex_map.append(temp_tex_map[t_index])
+                                tex_map.append(temp_tex_map[t_index])
 
                             if len(temp_normals) > n_index:
-                                self.normals.append(temp_normals[n_index])
+                                normals.append(temp_normals[n_index])
 
-                            self.indices.append(len(self.indices))
+                            indices.append(len(indices))
                     else:
                         v_indices = line.replace("f ", "").replace("\n", "").split(" ")
                         for v_index in v_indices:
                             v_index = int(v_index or 1) -1
                             if len(temp_vertices) > v_index:
-                                self.vertices.append(temp_vertices[v_index])
+                                vertices.append(temp_vertices[v_index])
                             
-                            self.indices.append(len(self.indices))
+                            indices.append(len(indices))
 
 
-            if not len(self.tex_map):
-                for i, el in enumerate(self.vertices):
+            if not len(tex_map):
+                for i, el in enumerate(vertices):
                     if i % 4 == 0:
-                        self.tex_map.append(1)
-                        self.tex_map.append(1)
+                        tex_map.append(1)
+                        tex_map.append(1)
                     if i % 4 == 1:
-                        self.tex_map.append(0)
-                        self.tex_map.append(1)
+                        tex_map.append(0)
+                        tex_map.append(1)
                     if i % 4 == 2:
-                        self.tex_map.append(1)
-                        self.tex_map.append(0)
+                        tex_map.append(1)
+                        tex_map.append(0)
                     if i % 4 == 3:
-                        self.tex_map.append(0)
-                        self.tex_map.append(0)
+                        tex_map.append(0)
+                        tex_map.append(0)
 
             file.close()
-            self.vertices = numpy.array(self.vertices, dtype="float32").flatten()
-            self.tex_map = numpy.array(self.tex_map, dtype="float32").flatten()
-            self.normals = numpy.array(self.normals, dtype="float32").flatten()
-            self.indices = numpy.array(self.indices, dtype="int32")
+            vertices = numpy.array(vertices, dtype="float32").flatten()
+            tex_map = numpy.array(tex_map, dtype="float32").flatten()
+            normals = numpy.array(normals, dtype="float32").flatten()
+            indices = numpy.array(indices, dtype="int32")
+
+
+            self.texture = Texture(textureFileName)
+            self.shader = Shader("VertexShader.shader", "FragmentShader.shader")
+            self.va = VertexArray()
+            self.vb_positions = VertexBuffer(vertices)
+            self.va.add_buffer(0, 3, self.vb_positions)
+            self.vb_texture = VertexBuffer(tex_map)
+            self.va.add_buffer(1, 3, self.vb_texture)
+            self.ib = IndexBuffer(indices)
+
+            self.model = {
+                'translation': [0.0, 0.0, 0.0],
+                'rotation':    [0.0, 0.0, 0.0],
+                'scale':       [1.0, 1.0, 1.0]
+            }
+
         except IOError:
             print(".obj file not found.")
+
+    def translate(self, x, y, z):
+        self.model['translation'] = [
+            self.model['translation'][0] + x,
+            self.model['translation'][1] + y,
+            self.model['translation'][2] + z
+        ]
+
+        print(self.model)
+
+    def render(self, mvp):
+        self.shader.add_uniform_1i("the_texture", 0)
+        self.shader.add_uniform_matrix_4f("mvp", mvp)
+        self.shader.bind()
+        self.texture.bind()
+        self.va.bind()
+        self.ib.bind()
+        glDrawElements(GL_TRIANGLES, self.va.size, GL_UNSIGNED_INT, None)
