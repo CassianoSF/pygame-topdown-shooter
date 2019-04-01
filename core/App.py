@@ -72,24 +72,24 @@ class App:
         mvp = self.motion(self.obj.model, self.view, self.projection)
         self.obj.render(mvp)
 
-        mvp2 = self.mount_mvp(self.obj2.model, self.view, self.projection)
+        mvp2 = self.motion(self.obj2.model, self.view, self.projection)
         self.obj2.render(mvp2)
 
 
     def motion(self, model, view, projection):
         pressed = pygame.key.get_pressed()
         if pressed[pygame.K_UP]:
-            model['rotation'][0] -= 0.03
+            view['position'][1] += 0.03
         if pressed[pygame.K_DOWN]:
-            model['rotation'][0] += 0.03
+            view['position'][1] -= 0.03
         if pressed[pygame.K_LEFT]:
-            model['rotation'][2] -= 0.03
+            view['position'][2] -= 0.03
         if pressed[pygame.K_RIGHT]:
-            model['rotation'][2] += 0.03
+            view['position'][2] += 0.03
         if pressed[pygame.K_a]:
-            model['rotation'][1] -= 0.03
+            view['position'][0] -= 0.03
         if pressed[pygame.K_d]:
-            model['rotation'][1] += 0.03
+            view['position'][0] += 0.03
         if pressed[pygame.K_w]:
             view['position'][2] -= 0.1
         if pressed[pygame.K_s]:
