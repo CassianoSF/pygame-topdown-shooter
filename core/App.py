@@ -32,7 +32,7 @@ class App:
         self.player22.scale(0.2,0.2,0.2)
 
         self.view = {
-            'position': [0.0, 0.0, 12.0],
+            'position': [0.0, 0.0, 6.0],
             'target':   [0.0, 0.0, 0.0],
             'up':       [0.0, 1.0, 0.0]
         }
@@ -43,6 +43,8 @@ class App:
             'far':    200.0,
             'dtype':  None 
         }
+
+        self.animacao = False
 
     def mount_mvp(self, model, view, projection):
         trans_matrix = numpy.transpose(pyrr.matrix44.create_from_translation(model['translation']))
@@ -106,51 +108,68 @@ class App:
 
 
     def motion(self, model, view, projection):
-        pressed = pygame.key.get_pressed()
-        if(pressed[pygame.K_r]):
-            self.view = {
-                'position': [0.0, 0.0, 12.0],
-                'target':   [0.0, 0.0, 0.0],
-                'up':       [0.0, 1.0, 0.0]
-            }
-        if pressed[pygame.K_UP]:
-            view['position'][1] += 0.03
-        if pressed[pygame.K_DOWN]:
-            view['position'][1] -= 0.03
-        if pressed[pygame.K_LEFT]:
-            self.rotate_view(view, 0.001)
-        if pressed[pygame.K_RIGHT]:
-            self.rotate_view(view, -0.001)
-        if pressed[pygame.K_a]:
-            view['position'][0] -= 0.03
-        if pressed[pygame.K_d]:
-            view['position'][0] += 0.03
-        if pressed[pygame.K_w]:
-            view['position'][2] -= 0.02
-        if pressed[pygame.K_s]:
-            view['position'][2] += 0.02
-        if(pressed[pygame.K_1]):
-            self.view = {
-                'position': [0.0, 2.0, 5.0],
-                'target':   [0.0, 0.0, 0.0],
-                'up':       [0.0, 1.0, 0.0]
-            }
-        
-        if(pressed[pygame.K_2]):
-            self.view = {
-                'position': [0.0, 5.0, 2.0],
-                'target':   [0.0, 0.0, 0.0],
-                'up':       [1.0, 0.0, 0.0]
-            }
-        
-        if(pressed[pygame.K_3]):
-            self.view = {
-                'position': [5.0, 2.0, 0.0],
-                'target':   [0.0, 0.0, 0.0],
-                'up':       [0.0, 1.0, 0.0]
-            }
+        if not self.animacao:
+            pressed = pygame.key.get_pressed()
+            if(pressed[pygame.K_4]):
+                self.animacao = True
 
-        return self.mount_mvp(model, view, projection)
+            if(pressed[pygame.K_r]):
+                self.view = {
+                    'position': [0.0, 0.0, 6.0],
+                    'target':   [0.0, 0.0, 0.0],
+                    'up':       [0.0, 1.0, 0.0]
+                }
+            if pressed[pygame.K_UP]:
+                view['position'][1] += 0.03
+            if pressed[pygame.K_DOWN]:
+                view['position'][1] -= 0.03
+            if pressed[pygame.K_LEFT]:
+                self.rotate_view(view, 0.001)
+            if pressed[pygame.K_RIGHT]:
+                self.rotate_view(view, -0.001)
+            if pressed[pygame.K_a]:
+                view['position'][0] -= 0.03
+            if pressed[pygame.K_d]:
+                view['position'][0] += 0.03
+            if pressed[pygame.K_w]:
+                view['position'][2] -= 0.02
+            if pressed[pygame.K_s]:
+                view['position'][2] += 0.02
+            if(pressed[pygame.K_1]):
+                self.view = {
+                    'position': [0.0, 2.0, 5.0],
+                    'target':   [0.0, 0.0, 0.0],
+                    'up':       [0.0, 1.0, 0.0]
+                }
+            
+            if(pressed[pygame.K_2]):
+                self.view = {
+                    'position': [0.0, 5.0, 2.0],
+                    'target':   [0.0, 0.0, 0.0],
+                    'up':       [1.0, 0.0, 0.0]
+                }
+            
+            if(pressed[pygame.K_3]):
+                self.view = {
+                    'position': [5.0, 2.0, 0.0],
+                    'target':   [0.0, 0.0, 0.0],
+                    'up':       [0.0, 1.0, 0.0]
+                }
+
+            return self.mount_mvp(model, view, projection)
+        
+        else:
+            if not view['position'][2] <= -6:
+                view['position'][2] -= 0.01
+                if(view['position'][2] > 0):
+                    view['position'][1] += 0.01
+                    view['position'][0] += 0.01
+                else:
+                    view['position'][1] -= 0.01
+                    view['position'][0] -= 0.01
+            else:
+                self.animacao = False
+            return self.mount_mvp(model, view, projection)
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
