@@ -129,6 +129,27 @@ class App:
             view['position'][2] -= 0.02
         if pressed[pygame.K_s]:
             view['position'][2] += 0.02
+        if(pressed[pygame.K_1]):
+            self.view = {
+                'position': [0.0, 2.0, 5.0],
+                'target':   [0.0, 0.0, 0.0],
+                'up':       [0.0, 1.0, 0.0]
+            }
+        
+        if(pressed[pygame.K_2]):
+            self.view = {
+                'position': [0.0, 5.0, 2.0],
+                'target':   [0.0, 0.0, 0.0],
+                'up':       [1.0, 0.0, 0.0]
+            }
+        
+        if(pressed[pygame.K_3]):
+            self.view = {
+                'position': [5.0, 2.0, 0.0],
+                'target':   [0.0, 0.0, 0.0],
+                'up':       [0.0, 1.0, 0.0]
+            }
+
         return self.mount_mvp(model, view, projection)
 
     def handle_event(self, event):
