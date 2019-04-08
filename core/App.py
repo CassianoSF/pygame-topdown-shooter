@@ -12,11 +12,24 @@ WINDOW_HEIGHT=720
 
 class App:
     def __init__(self):
-        self.obj = Object("../res/suzanne.obj", "../textures/the_floor/the_floor/crate_1.png")
-        self.obj2 = Object("../res/cube.obj", "../textures/the_floor/the_floor/crate_1.png")
+        self.tabuleiro = Object("../res/tabuleiro.obj", "../textures/the_floor/the_floor/floor_2.png")
+        self.player11 = Object("../res/player1.obj", "../textures/the_floor/the_floor/floor_2.png")
+        self.player12 = Object("../res/player1.obj", "../textures/the_floor/the_floor/floor_2.png")
+        self.player21 = Object("../res/player2.obj", "../textures/the_floor/the_floor/crate_1.png")
+        self.player22 = Object("../res/player2.obj", "../textures/the_floor/the_floor/crate_1.png")
 
 
-        self.obj2.translate(2,2,2)
+        self.player11.translate(0.8,0.2,0.8)
+        self.player11.scale(0.2,0.2,0.2)
+
+        self.player12.translate(-0.8,0.2,0.8)
+        self.player12.scale(0.2,0.2,0.2)
+        
+        self.player21.translate(0.8,0.2,-0.8)
+        self.player21.scale(0.2,0.2,0.2)
+        
+        self.player22.translate(-0.8,0.2,-0.8)
+        self.player22.scale(0.2,0.2,0.2)
 
         self.view = {
             'position': [0.0, 0.0, 12.0],
@@ -68,11 +81,17 @@ class App:
         glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA) 
 
-        mvp = self.motion(self.obj.model, self.view, self.projection)
-        self.obj.render(mvp)
+        mvp = self.motion(self.tabuleiro.model, self.view, self.projection)
+        self.tabuleiro.render(mvp)
 
-        mvp2 = self.motion(self.obj2.model, self.view, self.projection)
-        self.obj2.render(mvp2)
+        mvp2 = self.motion(self.player11.model, self.view, self.projection)
+        self.player11.render(mvp2)
+        mvp2 = self.motion(self.player12.model, self.view, self.projection)
+        self.player12.render(mvp2)
+        mvp2 = self.motion(self.player21.model, self.view, self.projection)
+        self.player21.render(mvp2)
+        mvp2 = self.motion(self.player22.model, self.view, self.projection)
+        self.player22.render(mvp2)
 
 
     def rotate_view(self, view, degrees):

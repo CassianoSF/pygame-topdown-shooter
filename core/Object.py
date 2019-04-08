@@ -90,8 +90,11 @@ class Object():
             self.vb_positions = VertexBuffer(vertices)
             self.va.add_buffer(0, 3, self.vb_positions)
             self.vb_texture = VertexBuffer(tex_map)
-            self.va.add_buffer(1, 3, self.vb_texture)
+            self.va.add_buffer(1, 2, self.vb_texture)
             self.ib = IndexBuffer(indices)
+
+            print(temp_vertices)
+            print(temp_tex_map)
 
             self.model = {
                 'translation': [0.0, 0.0, 0.0],
@@ -109,12 +112,14 @@ class Object():
             self.model['translation'][2] + z
         ]
 
+    def scale(self, x, y, z):
+        self.model['scale'] = [x,y,z]
 
     def render(self, mvp):
+        self.texture.bind()
         self.shader.add_uniform_1i("the_texture", 0)
         self.shader.add_uniform_matrix_4f("mvp", mvp)
         self.shader.bind()
-        self.texture.bind()
         self.va.bind()
         self.ib.bind()
         glDrawElements(GL_TRIANGLES, self.va.size, GL_UNSIGNED_INT, None)
